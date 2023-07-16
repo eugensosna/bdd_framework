@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 
 import 'package:characters/characters.dart';
 import 'package:collection/collection.dart';
@@ -41,9 +42,7 @@ class row {
     val? v14,
     val? v15,
     val? v16,
-  ]) : values = [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16]
-            .whereNotNull()
-            .toList();
+  ]) : values = [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16].whereNotNull().toList();
 }
 
 class val {
@@ -96,6 +95,20 @@ class BddKeywords {
     this.table = '',
   });
 
+  static BddKeywords KeywordswithLanguage(String language) {
+    BddKeywords result;
+    var input = File("gherkin-languages.json").readAsString();
+    var map = jsonDecode(input);
+    var localLanguage = map[language];
+    if (localLanguage == null) {
+      result = new BddKeywords();
+    } else {
+      result = new BddKeywords();
+    }
+
+    return result;
+  }
+
   const BddKeywords.only({
     this.feature = '',
     this.scenario = '',
@@ -110,38 +123,34 @@ class BddKeywords {
     this.table = '',
   });
 
+  Future<List<Map>> readJsonFile(String filePath) async {
+    var input = await File("gherkin-languages.jsob").readAsString();
+    var map = jsonDecode(input);
+    return ['users'];
+  }
+
   static const empty = const BddKeywords.only();
 
-  final String feature,
-      scenario,
-      scenarioOutline,
-      given,
-      when,
-      then,
-      and,
-      but,
-      comment,
-      examples,
-      table;
+  final String feature, scenario, scenarioOutline, given, when, then, and, but, comment, examples, table;
 }
 
 class BddConfig {
   static const _default = BddConfig();
 
-  const BddConfig({
-    this.keywords = const BddKeywords(),
-    this.prefix = BddKeywords.empty,
-    this.suffix = BddKeywords.empty,
-    this.keywordPrefix = BddKeywords.empty,
-    this.keywordSuffix = BddKeywords.empty,
-    this.indent = 2,
-    this.rightAlignKeywords = false,
-    this.padChar = ' ',
-    this.endOfLineChar = '\n',
-    this.tableDivider = '|',
-    this.space = ' ',
-    this.transformDescribe,
-  });
+  const BddConfig(
+      {this.keywords = const BddKeywords(),
+      this.prefix = BddKeywords.empty,
+      this.suffix = BddKeywords.empty,
+      this.keywordPrefix = BddKeywords.empty,
+      this.keywordSuffix = BddKeywords.empty,
+      this.indent = 2,
+      this.rightAlignKeywords = false,
+      this.padChar = ' ',
+      this.endOfLineChar = '\n',
+      this.tableDivider = '|',
+      this.space = ' ',
+      this.transformDescribe,
+      this.language = "en"});
 
   /// The keywords themselves.
   final BddKeywords keywords;
@@ -160,6 +169,7 @@ class BddConfig {
   final String endOfLineChar;
   final String tableDivider;
   final String space;
+  final String language;
 
   /// In tables and examples the output of values to feature files is done with toString().
   /// However, this can be overridden here for your business classes.
@@ -467,12 +477,10 @@ class BddGiven extends BddTerm {
   String keyword(BddConfig config) => _keywordVariation(config) ?? config.keywords.given;
 
   @override
-  String keywordPrefix(BddConfig config) =>
-      _keywordPrefixVariation(config) ?? config.keywordPrefix.given;
+  String keywordPrefix(BddConfig config) => _keywordPrefixVariation(config) ?? config.keywordPrefix.given;
 
   @override
-  String keywordSuffix(BddConfig config) =>
-      _keywordSuffixVariation(config) ?? config.keywordSuffix.given;
+  String keywordSuffix(BddConfig config) => _keywordSuffixVariation(config) ?? config.keywordSuffix.given;
 
   @override
   String prefix(BddConfig config) => _prefixVariation(config) ?? config.prefix.given;
@@ -502,8 +510,8 @@ class BddGiven extends BddTerm {
     row? row15,
     row? row16,
   ]) =>
-      BddGivenTable(bdd, tableName, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
-          row11, row12, row13, row14, row15, row16);
+      BddGivenTable(bdd, tableName, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13,
+          row14, row15, row16);
 
   BddGiven and(String text) => BddGiven._(bdd, text, _Variation.and);
 
@@ -554,12 +562,10 @@ class BddWhen extends BddTerm {
   String keyword(BddConfig config) => _keywordVariation(config) ?? config.keywords.when;
 
   @override
-  String keywordPrefix(BddConfig config) =>
-      _keywordPrefixVariation(config) ?? config.keywordPrefix.when;
+  String keywordPrefix(BddConfig config) => _keywordPrefixVariation(config) ?? config.keywordPrefix.when;
 
   @override
-  String keywordSuffix(BddConfig config) =>
-      _keywordSuffixVariation(config) ?? config.keywordSuffix.when;
+  String keywordSuffix(BddConfig config) => _keywordSuffixVariation(config) ?? config.keywordSuffix.when;
 
   @override
   String prefix(BddConfig config) => _prefixVariation(config) ?? config.prefix.when;
@@ -622,12 +628,10 @@ class BddThen extends BddTerm {
   String keyword(BddConfig config) => _keywordVariation(config) ?? config.keywords.then;
 
   @override
-  String keywordPrefix(BddConfig config) =>
-      _keywordPrefixVariation(config) ?? config.keywordPrefix.then;
+  String keywordPrefix(BddConfig config) => _keywordPrefixVariation(config) ?? config.keywordPrefix.then;
 
   @override
-  String keywordSuffix(BddConfig config) =>
-      _keywordSuffixVariation(config) ?? config.keywordSuffix.then;
+  String keywordSuffix(BddConfig config) => _keywordSuffixVariation(config) ?? config.keywordSuffix.then;
 
   @override
   String prefix(BddConfig config) => _prefixVariation(config) ?? config.prefix.then;
@@ -760,8 +764,7 @@ abstract class BddTableTerm extends BddTerm {
     var endOfLineChar = config.endOfLineChar;
     var tableDivider = config.tableDivider;
 
-    String rightAlignPadding =
-        spaces + spaces + spaces + ((config.rightAlignKeywords) ? config.padChar * 4 : '');
+    String rightAlignPadding = spaces + spaces + spaces + ((config.rightAlignKeywords) ? config.padChar * 4 : '');
 
     String header = rightAlignPadding +
         '$tableDivider$space' +
@@ -818,11 +821,10 @@ abstract class BddTableTerm extends BddTerm {
 
 class BddExample extends BddTerm {
   //
-  BddExample(BddFramework bdd, val v1, val? v2, val? v3, val? v4, val? v5, val? v6, val? v7,
-      val? v8, val? v9, val? v10, val? v11, val? v12, val? v13, val? v14, val? v15)
+  BddExample(BddFramework bdd, val v1, val? v2, val? v3, val? v4, val? v5, val? v6, val? v7, val? v8, val? v9, val? v10,
+      val? v11, val? v12, val? v13, val? v14, val? v15)
       : super(bdd, '', _Variation.term) {
-    var set =
-        [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15].whereNotNull().toSet();
+    var set = [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15].whereNotNull().toSet();
     rows.add(set);
   }
 
@@ -854,8 +856,7 @@ class BddExample extends BddTerm {
     var endOfLineChar = config.endOfLineChar;
     var tableDivider = config.tableDivider;
 
-    String rightAlignPadding =
-        spaces + spaces + spaces + ((config.rightAlignKeywords) ? config.padChar * 4 : '');
+    String rightAlignPadding = spaces + spaces + spaces + ((config.rightAlignKeywords) ? config.padChar * 4 : '');
 
     String header = rightAlignPadding +
         '$tableDivider$space' +
@@ -916,12 +917,10 @@ class BddExample extends BddTerm {
   String keyword(BddConfig config) => _keywordVariation(config) ?? config.keywords.examples;
 
   @override
-  String keywordPrefix(BddConfig config) =>
-      _keywordPrefixVariation(config) ?? config.keywordPrefix.examples;
+  String keywordPrefix(BddConfig config) => _keywordPrefixVariation(config) ?? config.keywordPrefix.examples;
 
   @override
-  String keywordSuffix(BddConfig config) =>
-      _keywordSuffixVariation(config) ?? config.keywordSuffix.examples;
+  String keywordSuffix(BddConfig config) => _keywordSuffixVariation(config) ?? config.keywordSuffix.examples;
 
   @override
   String prefix(BddConfig config) => _prefixVariation(config) ?? config.prefix.examples;
@@ -946,8 +945,7 @@ class BddExample extends BddTerm {
     val? v14,
     val? v15,
   ]) {
-    rows.add(
-        [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15].whereNotNull().toSet());
+    rows.add([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15].whereNotNull().toSet());
     return this;
   }
 
@@ -993,24 +991,8 @@ class BddGivenTable extends BddTableTerm {
     row? row15,
     row? row16,
   ]) : super(bdd, tableName) {
-    rows.addAll([
-      row1,
-      row2,
-      row3,
-      row4,
-      row5,
-      row6,
-      row7,
-      row8,
-      row9,
-      row10,
-      row11,
-      row12,
-      row13,
-      row14,
-      row15,
-      row16
-    ].whereNotNull());
+    rows.addAll([row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16]
+        .whereNotNull());
   }
 
   BddGiven and(String text) => BddGiven._(bdd, text, _Variation.and);
@@ -1170,8 +1152,7 @@ class BddFeature {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is BddFeature && runtimeType == other.runtimeType && title == other.title;
+      identical(this, other) || other is BddFeature && runtimeType == other.runtimeType && title == other.title;
 
   @override
   int get hashCode => title.hashCode;
@@ -1252,9 +1233,8 @@ abstract class BddReporter {
   }
 
   /// Keeps A-Z 0-9, make it lowercase, and change spaces into underline.
-  String normalizeFileName(String name) =>
-      name.trim().splitMapJoin(RegExp(r"""[ "'#<$+%>!`&*|{?=}/:\\@^.]"""),
-          onMatch: (m) => m[0] == ' ' ? '_' : '', onNonMatch: (m) => m.toLowerCase());
+  String normalizeFileName(String name) => name.trim().splitMapJoin(RegExp(r"""[ "'#<$+%>!`&*|{?=}/:\\@^.]"""),
+      onMatch: (m) => m[0] == ' ' ? '_' : '', onNonMatch: (m) => m.toLowerCase());
 }
 
 class TestRunConfig {
@@ -1339,18 +1319,8 @@ class _Run {
     var x = index.toString();
     for (int i = 0; i < x.length; i++) {
       var char = x[i];
-      result += {
-        '0': '₀',
-        '1': '₁',
-        '2': '₂',
-        '3': '₃',
-        '4': '₄',
-        '5': '₅',
-        '6': '₆',
-        '7': '₇',
-        '8': '₈',
-        '9': '₉'
-      }[char]!;
+      result +=
+          {'0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'}[char]!;
     }
     return result;
   }
@@ -1449,11 +1419,9 @@ class _Run {
             "$italicOff══════════════════════════════════════════════════$reset\n\n";
   }
 
-  String _footer(String testNumberStr) =>
-      grey + "\n✔ ${italic}TEST $testNumberStr PASSED!\n\n" + italicOff;
+  String _footer(String testNumberStr) => grey + "\n✔ ${italic}TEST $testNumberStr PASSED!\n\n" + italicOff;
 
-  String _fail(String testNumberStr) =>
-      grey + "\n⚠ ${italic}TEST $testNumberStr FAILED!\n" + italicOff;
+  String _fail(String testNumberStr) => grey + "\n⚠ ${italic}TEST $testNumberStr FAILED!\n" + italicOff;
 }
 
 /// This is for testing the BDD framework only.
